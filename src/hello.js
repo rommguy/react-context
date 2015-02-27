@@ -9,7 +9,7 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
         componentDidMount: function(){
             $.get('../exampleData.json', function(dependenciesData){
                 this.setState({
-                    data: JSON.parse(dependenciesData)
+                    data: dependenciesData
                 });
             }.bind(this));
         },
