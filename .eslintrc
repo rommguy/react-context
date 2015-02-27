@@ -137,6 +137,7 @@
     },
     "globals": {
         "requirejs": true,
-        "console": true
+        "console": true,
+        "d3": true
     }
 }
