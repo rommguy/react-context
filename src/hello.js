@@ -6,40 +6,61 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
         getInitialState: function () {
             return {
                 graphData: null,
+                dependenciesData: null,
                 selectedPackages: []
             };
         },
         getAvailablePackages: function(){
-            if (this.state.graphData){
-                return _.keys(this.state.graphData.nodes);
+            if (this.state.dependenciesData){
+                return _.keys(this.state.dependenciesData);
             }
+        },
+        packageClicked: function(evt, packageName){
+            var selectedPackages = _.clone(this.state.selectedPackages);
+            if (evt.target.checked){
+                selectedPackages.push(packageName);
+            } else {
+                _.remove(selectedPackages, function(value){
+                    return value === packageName;
+                });
+            }
+            this.setState({
+                selectedPackages: selectedPackages
+            });
         },
         componentDidMount: function () {
             $.get('../exampleData.json', function (dependenciesData) {
-                var processedData = this.processData(dependenciesData);
                 this.setState({
-                    graphData: processedData
+                    dependenciesData: dependenciesData
                 });
             }.bind(this));
         },
-        processData: function (jsonData) {
+        componentDidUpdate: function(prevProps, prevState){
+            if (this.state.dependenciesData && prevState.selectedPackages !== this.state.selectedPackages){
+                var graphData = this.processData();
+                this.drawGraph(graphData);
+            }
+        },
+        processData: function () {
+            var jsonData = this.state.dependenciesData;
             var nodes = {};
             var links = [];
             var maxCounter = 0;
             _.forEach(jsonData, function(dependencies, packageName){
-                if (packageName !== 'core'){
-                    return;
-                }
+//                if (!_.contains(this.state.selectedPackages, packageName)){
+//                    return;
+//                }
                 nodes[packageName] = nodes[packageName] || {
-                    name: packageName
+                    name: packageName,
+                    linkCounter: 0
                 };
-
                 _.forEach(dependencies, function(counter, targetPackage){
-                    if (!counter){
+                    if (!counter || !_.contains(this.state.selectedPackages, targetPackage)){
                         return;
                     }
                     nodes[targetPackage] = nodes[targetPackage] || {
-                        name: targetPackage
+                        name: targetPackage,
+                        linkCounter: 0
                     };
                     var link = {
                         source: nodes[packageName],
@@ -48,7 +69,13 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
                     };
                     maxCounter = Math.max(maxCounter, counter);
                     links.push(link);
-                });
+                    nodes[packageName].linkCounter++;
+                    nodes[targetPackage].linkCounter++;
+                }, this);
+            }, this);
+
+            nodes = _.omit(nodes, function(nodeData){
+                return nodeData.linkCounter === 0;
             });
 
             return {
@@ -57,15 +84,17 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
                 maxWeight: maxCounter
             };
         },
-        componentDidUpdate: function(){
-            if (this.state.graphData){
-                this.drawGraph();
+        cleanGraph: function(){
+            var graphContainer = this.refs.graphContainer.getDOMNode();
+            while (graphContainer.firstChild) {
+                graphContainer.removeChild(graphContainer.firstChild);
             }
         },
-        drawGraph: function(){
-            var nodes = this.state.graphData.nodes;
-            var links = this.state.graphData.links;
-            var maxWeight = this.state.graphData.maxWeight;
+        drawGraph: function(graphData){
+            this.cleanGraph();
+            var nodes = graphData.nodes;
+            var links = graphData.links;
+            var maxWeight = graphData.maxWeight;
             function getOpacity(weight){
                 return 0.2 + (weight * 0.8 / maxWeight);
             }
@@ -104,6 +133,7 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
                 .data(force.nodes())
                 .enter().append("circle")
                 .attr("r", 9)
+                .style('fill', getRandomColor)
                 .call(force.drag);
 
             var text = svg.append("g").selectAll("text")
@@ -138,6 +168,15 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
 
             function transform(d) {
                 return "translate(" + d.x + "," + d.y + ")";
+            }
+
+            function getRandomColor() {
+                var letters = '0123456789ABCDEF'.split('');
+                var color = '#';
+                for (var i = 0; i < 6; i++ ) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
             }
         },
         render: template
