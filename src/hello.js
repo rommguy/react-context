@@ -4,7 +4,15 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
     return React.createClass({
         displayName: 'Hello',
         getInitialState: function () {
-            return {graphData: null};
+            return {
+                graphData: null,
+                selectedPackages: []
+            };
+        },
+        getAvailablePackages: function(){
+            if (this.state.graphData){
+                return _.keys(this.state.graphData.nodes);
+            }
         },
         componentDidMount: function () {
             $.get('../exampleData.json', function (dependenciesData) {
@@ -19,6 +27,9 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
             var links = [];
             var maxCounter = 0;
             _.forEach(jsonData, function(dependencies, packageName){
+                if (packageName !== 'core'){
+                    return;
+                }
                 nodes[packageName] = nodes[packageName] || {
                     name: packageName
                 };
@@ -66,12 +77,12 @@ define(['react', 'lodash', 'zepto', './hello.rt'], function (React, _, $, templa
                 .nodes(d3.values(nodes))
                 .links(links)
                 .size([width, height])
-                .linkDistance(120)
+                .linkDistance(150)
                 .charge(-1000)
                 .on("tick", tick)
                 .start();
 
-            var svg = d3.select("body").append("svg")
+            var svg = d3.select("#graph-container").append("svg")
                 .attr("width", width)
                 .attr("height", height);
 

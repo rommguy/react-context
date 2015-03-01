@@ -15,3 +15,16 @@ text {
     pointer-events: none;
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
+
+.package-option {
+    display: block;
+}
+
+.options-container {
+    width:150px;
+    float: left;
+}
+
+#graph-container {
+    float: left;
+}
