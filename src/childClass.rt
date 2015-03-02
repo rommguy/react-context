@@ -1,0 +1,5 @@
+<div>
+    <label>Child comp</label>
+    <br>
+    <button onClick="(e) => this.printComponent()">call editorAPI function</button>
+</div>

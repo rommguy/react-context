@@ -17,7 +17,7 @@ requirejs.config({
     }
 });
 
-requirejs(['react', './hello'], function (React, hello) {
+requirejs(['react', './parentClass'], function (React, parentClass) {
     'use strict';
-    React.render(React.createElement(hello), document.getElementById('container'));
+    React.render(React.createElement(parentClass), document.getElementById('container'));
 });

@@ -1,9 +1,0 @@
-<div>
-    <h2>Packages graph</h2>
-    <div class="options-container">
-        <label class="package-option" rt-repeat="packageName in this.getAvailablePackages()">
-            <input type="checkbox" onChange="(evt) => this.packageClicked(evt,packageName)">{packageName}</input>
-        </label>
-    </div>
-    <div ref="graphContainer" id="graph-container"></div>
-</div>

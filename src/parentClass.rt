@@ -1,0 +1,11 @@
+<rt-require dependency="./childClass" as="childClass"></rt-require>
+
+<div>
+    <h2>React Context</h2>
+    <button onClick="{this.addEditorAPI}">Add editorAPI to parent</button>
+    <br>
+    <br>
+    <div>
+        <childClass></childClass>
+    </div>
+</div>
